@@ -42,6 +42,8 @@
 - Выводы и рекомендации для продакт-менеджера
 
 ## 📁 Файловая структура
+
+```text
 language-model-comparison/
 ├── README.md # Описание проекта (этот файл)
 ├── requirements.txt # Зависимости Python
@@ -49,7 +51,7 @@ language-model-comparison/
 │ ├── project_notebook.ipynb
 ├── results/ # Графики и результаты
 └── models/ # Обученные модели
-
+```
 
 ## 🔧 Зависимости
 
