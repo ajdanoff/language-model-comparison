@@ -45,12 +45,26 @@
 
 ```text
 language-model-comparison/
-├── README.md # Описание проекта (этот файл)
-├── requirements.txt # Зависимости Python
-├── notebooks/ # Jupyter блокноты
-│ ├── project_notebook.ipynb
-├── results/ # Графики и результаты
-└── models/ # Обученные модели
+├── README.md                     # Описание проекта
+├── requirements.txt              # Зависимости Python
+├── .gitignore                    # Игнорирование файлов
+├── config.yaml                   # Конфигурация (параметры проекта)
+├── run.py                        # Основной скрипт для запуска
+├── src/                          # Python модули
+│   ├── __init__.py
+│   ├── data_loader.py            # Загрузка и preprocessing данных
+│   ├── model.py                  # Определение моделей (LSTM/GRU)
+│   ├── training.py               # Обучение и валидация
+│   ├── evaluation.py             # Вычисление perplexity
+│   └── utils.py                  # Функции-помощники
+├── notebooks/                    # Jupyter блокноты (для документации)
+│   ├── 01_data_loading.ipynb
+│   ├── 02_lstm_training.ipynb
+│   └── 03_gru_vs_lstm.ipynb
+├── tests/                        # Тесты (опционально)
+│   ├── __init__.py
+│   └── test_data_loader.py
+└── results/                      # Результаты и графики
 ```
 
 ## 🔧 Зависимости
@@ -171,9 +185,9 @@ pip install -r requirements.txt
    pip install -r requirements.txt
    ```
 
-3. Запустите блокнот:
+3. Запустите скрипт:
    ```bash
-   jupyter notebook notebooks/project_notebook.ipynb
+   python run.py
    ```
 
 ## 📞 Контакты

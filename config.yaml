@@ -1,0 +1,40 @@
+# Параметры проекта
+project:
+  name: "language-model-comparison"
+  version: "1.0.0"
+  description: "Сравнение LSTM vs GRU vs distilgpt2"
+
+# Гиперпараметры
+model:
+  embedding_dim: 128
+  hidden_dim: 256
+  num_layers: 2
+  min_freq: 2
+  max_texts_count: 7000
+  seq_length: 32
+
+# Обучение
+training:
+  batch_size: 32
+  num_epochs: 5
+  lr: 0.001
+  val_size: 0.05
+  max_norm: 1.0
+  random_seed: 42
+
+# Датасет
+dataset:
+  name: "wikitext"
+  config: "wikitext-2-raw-v1"
+  split: "train"
+
+# GPU
+gpu:
+  enabled: true
+  device: "cuda"
+
+# Выходные пути
+paths:
+  models_dir: "models"
+  results_dir: "results"
+  log_dir: "logs"
