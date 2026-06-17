@@ -47,7 +47,7 @@ class WikiTextLoader:
         cleaned_texts = list(map(self._clean_string, texts))
         
         print(f"✓ Загружено текстов: {len(cleaned_texts)}")
-        return cleaned_texts
+        return cleaned_texts[:max_texts_count]
     
     def tokenize_text(self, text):
         """Токенизация текста"""
@@ -224,10 +224,50 @@ class DataLoaderHelper:
         train_dataset, val_dataset = self.train_val_datasets(train_texts, val_texts, vocab)
         train_loader, val_loader = self.get_data_loaders(train_dataset, val_dataset)
         return train_loader, val_loader, vocab
-    
+
+
+def train_texts_analysis(train_texts):
+        # 2a. Примеры текстов
+        print("\n--- Примеры текстов (первые 5) ---")
+        for i in range(5):
+            print(f"\nТекст #{i+1} (первые 300 символов):")
+            print(train_texts[i][:300] + "...")
         
-# запускать без хелпера (анализа данных)
-def get_data_loaders(config_path="config.yaml"):
+        # 2b. Подсчёт статистики
+        # # Число предложений (по точкам)
+        sentence_counts = [len(re.split(r'\.', text)) - 1 for text in train_texts]
+        sentence_counts = [c if c > 0 else 1 for c in sentence_counts]  # заменяем 0 на 1
+        
+        print("\n=== Статистика по количеству предложений в тексте ===")
+        print(f"Среднее: {np.mean(sentence_counts):.2f}")
+        print(f"Медиана: {np.median(sentence_counts):.2f}")
+        print(f"Минимум: {min(sentence_counts)}")
+        print(f"Максимум: {max(sentence_counts)}")
+        
+        # Количество слов в текстах
+        word_counts = [len(text.split()) for text in train_texts]
+        
+        print("\n=== Статистика по количеству слов в тексте ===")
+        print(f"Среднее: {np.mean(word_counts):.2f}")
+        print(f"Медиана: {np.median(word_counts):.2f}")
+        print(f"5-й перцентиль: {np.percentile(word_counts, 5):.2f}")
+        print(f"95-й перцентиль: {np.percentile(word_counts, 95):.2f}")
+        print(f"Минимум: {min(word_counts)}")
+        print(f"Максимум: {max(word_counts)}")
+        print(f"Стандартное отклонение: {np.std(word_counts):.2f}")
+        
+        # 2c. Гистограмма распределения длины
+        plt.figure(figsize=(10, 6))
+        plt.hist(word_counts, bins=50, edgecolor='black')
+        plt.title("Распределение количества слов в текстах")
+        plt.xlabel("Количество слов")
+        plt.ylabel("Частота")
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
+    
+
+def get_data_loaders(config_path="config.yaml", analysis=False):
     """Функция для получения DataLoader'ов"""
     loader = WikiTextLoader(config_path)
     
@@ -239,6 +279,9 @@ def get_data_loaders(config_path="config.yaml"):
         split=config['dataset']['split'],
         max_texts_count=config['model']['max_texts_count']
     )
+    
+    if analysis:
+        train_texts_analysis(train_texts)
     
     # Разделение на train/val
     train_texts, val_texts = train_test_split(

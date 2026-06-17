@@ -6,6 +6,55 @@ import torch
 import numpy as np
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast, GPT2Config
 import torch.nn as nn
+import math
+
+def compute_rnn_test_ppl(model, texts, loader, vocab, seq_length, config, device):
+    model.eval()
+    all_indices = []
+    for text in texts:
+        all_indices.extend(loader.text_to_indices(text, vocab))
+    sequences, targets = loader.create_sequences(all_indices, seq_length)
+    if len(sequences) == 0:
+        return None, None
+
+    x = torch.tensor(sequences, dtype=torch.long)
+    y = torch.tensor(targets, dtype=torch.long)
+    ds = torch.utils.data.TensorDataset(x, y)
+    dl = torch.utils.data.DataLoader(ds, batch_size=config["training"]["batch_size"], shuffle=False)
+
+    total_loss = 0.0
+    total_tokens = 0
+    criterion = torch.nn.CrossEntropyLoss()
+
+    with torch.no_grad():
+        for xb, yb in dl:
+            xb = xb.to(device)
+            yb = yb.to(device)
+            out = model(xb)
+            out = out.permute(0, 2, 1).reshape(-1, config["model"]["vocab_size"])
+            tgt = yb.reshape(-1)
+            loss = criterion(out, tgt)
+            tokens = yb.numel()
+            total_loss += loss.item() * tokens
+            total_tokens += tokens
+
+    avg_loss = total_loss / total_tokens
+    ppl = math.exp(avg_loss)
+    return ppl, avg_loss
+
+def generate_rnn(model, prompt, vocab, config, device, max_new_tokens=10):
+    inv_vocab = {v: k for k, v in vocab.items()}
+    tokens = prompt.lower().split()
+    ids = [vocab.get(t, vocab["<unk>"]) for t in tokens]
+    generated = ids[:]
+    model.eval()
+    for _ in range(max_new_tokens):
+        x = torch.tensor([generated[-config["model"]["seq_length"]:]], dtype=torch.long).to(device)
+        with torch.no_grad():
+            out = model(x)
+            next_id = int(out[0, -1].argmax().item())
+        generated.append(next_id)
+    return " ".join(inv_vocab.get(i, "<unk>") for i in generated)
 
 
 def compute_perplexity(model, loader, device, vocab_size):
